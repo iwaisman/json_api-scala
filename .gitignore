@@ -1,0 +1,35 @@
+## Emacs
+*~
+\#*\#
+
+## SBT
+**/target/*
+
+## IDEA
+.idea
+*.iml
+
+.DS_Store
+
+# TODO: remove this when this directory is removed locally
+# for now, while this stubs out the CSL classes
+src/main/scala/cota/csl
+scala/target
+scala/project/target
+scala/project/plugins/project
+
+csl/csl-domain/src/main/scala/cota/csl/models
+
+*.class
+*.log
+
+src/main/resources/dictionary/rules.yml
+
+# the symlinked csl classes
+bidness/src/main/scala/com
+
+# username/password for astrocyte integration tests (run locally)
+astrocyte/src/it/resources/integration.login.conf
+
+# private configs
+shh_*.conf
