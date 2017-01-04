@@ -57,8 +57,8 @@ trait CirceEncoding { self: CirceApi =>
   }
 
   implicit val resourceEncoder = Encoder.instance[Resource]{
-    case r: ResourceIdentifier => r.asJson
     case r: ResourceObject     => r.asJson
+    case r: ResourceIdentifier => r.asJson
   }
 
   implicit val documentEncoder = Encoder.instance[JsonApiDocument] { document =>
