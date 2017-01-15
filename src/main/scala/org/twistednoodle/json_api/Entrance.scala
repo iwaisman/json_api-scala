@@ -44,4 +44,12 @@ trait Entrance { self: JsonApi =>
     implicit def fromIRO[T](implicit iroWriter: ToIdentifiedResourceObject[T]): ToResourceIdentifier[T] =
       (t: T) => iroWriter.from(t)
   }
+
+  trait ToJsonApiError[T] {
+    def from(t: T): JsonApiError
+  }
+  object ToJsonApiError {
+    def apply[T](implicit reader: ToJsonApiError[T]): ToJsonApiError[T] = reader
+    def from[T](t: T)(implicit reader: ToJsonApiError[T]): JsonApiError = reader.from(t)
+  }
 }

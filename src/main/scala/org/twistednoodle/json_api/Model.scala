@@ -47,7 +47,21 @@ trait Model { self: JsonApi =>
                           meta: Option[JSON] = None)
 
   // Resources ============================================
-  sealed trait Resource
+  /**
+    * Sealed trait representing the two ways to represent data: single [[Resource]] or a sequence of [[Resources]]
+    */
+  sealed trait Data
+
+  /**
+    * A sealed trait comprised of [[ResourceIdentifier]]s and [[ResourceObject]]s
+    */
+  sealed trait Resource extends Data
+
+  /**
+    * A container for multiple resources. This allows for consistent serialization as a json array.
+    * @param resources a sequence of [[Resource]]s
+    */
+  case class Resources( resources: immutable.Seq[Resource]) extends Data
 
   trait ResourceIdentifier extends Resource {
     val id: String
@@ -92,7 +106,7 @@ trait Model { self: JsonApi =>
   // Document, top-level objects ==========================
   /**
     * A trait representing top-level json:api documents.
-    * The two primary variants are Data and Error.
+    * The two primary variants are [[DataDocument]] and [[ErrorDocument]].
     */
   sealed trait JsonApiDocument {
     val included: immutable.Seq[ResourceObject]
@@ -100,7 +114,12 @@ trait Model { self: JsonApi =>
     val meta: Option[JSON]
     val version: Option[Version]
   }
-  case class DataDocument(data: immutable.Seq[Resource],
+
+  /**
+    * A Data document, as opposed to an Error document
+    * @param data Either a single [[Resource]] or sequence of [[Resource]]s as a [[Resources]] object
+    */
+  case class DataDocument(data: Data,
 
                           override val included: immutable.Seq[ResourceObject] = immutable.Seq.empty,
                           override val links: Links = Map.empty,
@@ -108,6 +127,10 @@ trait Model { self: JsonApi =>
                           override val version: Option[Version] = None
                          ) extends JsonApiDocument
 
+  /**
+    * An Error document as opposed to a Data document.
+    * @param errors a sequence of [[JsonApiError]]s.
+    */
   case class ErrorDocument(errors: immutable.Seq[JsonApiError],
 
                            override val included: immutable.Seq[ResourceObject] = immutable.Seq.empty,
@@ -115,6 +138,4 @@ trait Model { self: JsonApi =>
                            override val meta: Option[JSON] = None,
                            override val version: Option[Version] = None
                           ) extends JsonApiDocument
-
-
 }

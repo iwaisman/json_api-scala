@@ -56,14 +56,19 @@ trait CirceEncoding { self: CirceApi =>
     Json.fromFields( ignoreEmpty( members: _*))
   }
 
-  implicit val resourceEncoder = Encoder.instance[Resource]{
+  implicit val resourceEncoder: Encoder[Resource] = Encoder.instance[Resource]{
     case r: ResourceObject     => r.asJson
     case r: ResourceIdentifier => r.asJson
   }
 
+  implicit val dataEncoder = Encoder.instance[Data]{
+    case r: Resource => resourceEncoder(r)
+    case Resources(rs) => Json.fromValues(rs.map(resourceEncoder.apply))
+  }
+
   implicit val documentEncoder = Encoder.instance[JsonApiDocument] { document =>
     val head = document match {
-      case doc: DataDocument   => "data" -> unwrappedJson( doc.data)
+      case doc: DataDocument   => "data" -> doc.data.asJson
       case doc: ErrorDocument => "errors" -> doc.errors.asJson
     }
 
@@ -83,9 +88,4 @@ trait CirceEncoding { self: CirceApi =>
     case (_, j: Json) if j.asArray.exists(_.isEmpty) => false
     case _ => true
   }
-
-  // If the collection has only a single element then unwrap it before conversion to JSON
-  private def unwrappedJson[T](coll: immutable.Seq[T])(implicit encoder: Encoder[T]): Json =
-    if(coll.size == 1) coll.head.asJson
-    else coll.asJson
 }

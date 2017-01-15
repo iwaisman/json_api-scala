@@ -99,7 +99,7 @@ trait CirceDecoding { self: CirceApi =>
       val inc = included getOrElse Nil
       val ls = links getOrElse Map.empty
       dataOrErrors match {
-        case Left(data) => DataDocument( data, inc, ls, meta, version)
+        case Left(data) => DataDocument( Resources(data), inc, ls, meta, version)
         case Right(errors) => ErrorDocument( errors, inc, ls, meta, version)
       }
     }

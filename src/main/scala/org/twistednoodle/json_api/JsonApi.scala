@@ -9,6 +9,8 @@ package org.twistednoodle.json_api
   * being done by the associated JSON integration.
   *
   */
-trait JsonApi extends Model with Entrance {
+trait JsonApi extends Model with
+                      Entrance with
+                      Exit {
   type JSON
 }
