@@ -4,7 +4,7 @@ import scala.collection.immutable
 
 import io.circe.generic.semiauto._
 import io.circe.syntax._
-import io.circe.{Encoder, Json}
+import io.circe._
 
 // Created by iwaisman on 12/30/16.
 
@@ -26,7 +26,8 @@ trait CirceEncoding { self: CirceApi =>
       "meta" -> l.meta.asJson
     ))
   }
-  implicit val linksEncoder = Encoder.instance[Links](l => Json.fromValues(l.map(_.asJson)))
+
+  implicit val linksEncoder = Encoder.instance[Links](l => Json.fromJsonObject(JsonObject.fromMap(l.mapValues(_.asJson))))
 
   implicit val errorSourceEncoder: Encoder[ErrorSource] = deriveEncoder
   implicit val errorEncoder: Encoder[JsonApiError] = deriveEncoder
