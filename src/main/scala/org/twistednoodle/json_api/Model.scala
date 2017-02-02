@@ -42,13 +42,9 @@ trait Model { self: JsonApi =>
 
   case class Link(href: URL, meta: Option[JSON] = None)
 
-  case class Relationship(links: Links = Map.empty,
-                          data: immutable.Seq[ResourceIdentifier],
-                          meta: Option[JSON] = None)
-
   // Resources ============================================
   /**
-    * Sealed trait representing the two ways to represent data: single [[Resource]] or a sequence of [[Resources]]
+    * Sealed trait representing the two ways to represent data: single [[Resource]] or a sequence of them as a [[Resources]]
     */
   sealed trait Data
 
@@ -63,7 +59,7 @@ trait Model { self: JsonApi =>
     */
   case class Resources( resources: immutable.Seq[Resource]) extends Data
 
-  trait ResourceIdentifier extends Resource {
+  trait ResourceIdentifier extends Resource with RelationshipData {
     val id: String
     val tpe: String
     val meta: Option[JSON]
@@ -102,6 +98,23 @@ trait Model { self: JsonApi =>
         meta = obj.meta
       )
   }
+
+  // Relationships ========================================
+  /**
+    * Sealed trait representing the two ways to represent relationship data: single [[ResourceIdentifier]] or a sequence of them as a [[ResourceIdentifiers]]
+    */
+  sealed trait RelationshipData
+
+  /**
+    * A container for multiple resource identifiers. This allows for consistent serialization as a json array.
+    * This is intended for use in a [[Relationship]]
+    * @param identifiers a sequence of [[ResourceIdentifiers]]s
+    */
+  case class ResourceIdentifiers( identifiers: immutable.Seq[ResourceIdentifier]) extends RelationshipData
+
+  case class Relationship(links: Links = Map.empty,
+                          data: Option[RelationshipData],
+                          meta: Option[JSON] = None)
 
   // Document, top-level objects ==========================
   /**

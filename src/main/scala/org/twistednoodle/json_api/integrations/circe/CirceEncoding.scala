@@ -12,7 +12,7 @@ trait CirceEncoding { self: CirceApi =>
 
   implicit val versionEncoder: Encoder[Version] = deriveEncoder
 
-  implicit val resourceIdentifier = Encoder.instance[ResourceIdentifier]{ r =>
+  implicit val resourceIdentifier: Encoder[ResourceIdentifier] = Encoder.instance[ResourceIdentifier]{ r =>
     Json.fromFields( ignoreEmpty(
       "id" -> r.id.asJson,
       "type" -> r.tpe.asJson,
@@ -20,25 +20,31 @@ trait CirceEncoding { self: CirceApi =>
     ))
   }
 
-  implicit val linkEncoder = Encoder.instance[Link]{ l =>
+  implicit val linkEncoder: Encoder[Link] = Encoder.instance[Link]{ l =>
     Json.fromFields(ignoreEmpty(
       "href" -> l.href.toString.asJson,
       "meta" -> l.meta.asJson
     ))
   }
 
-  implicit val linksEncoder = Encoder.instance[Links](l => Json.fromJsonObject(JsonObject.fromMap(l.mapValues(_.asJson))))
+  implicit val linksEncoder: Encoder[Links] =
+    Encoder.instance[Links](l => Json.fromJsonObject(JsonObject.fromMap(l.mapValues(_.asJson))))
 
   implicit val errorSourceEncoder: Encoder[ErrorSource] = deriveEncoder
   implicit val errorEncoder: Encoder[JsonApiError] = deriveEncoder
 
 
-  implicit val relationshipEncoder = Encoder.instance[Relationship] { r =>
-    Json.fromFields( ignoreEmpty(
-      "data" -> Json.fromValues(r.data.map(_.asJson)),
+  implicit val relationshipDataEncoder: Encoder[RelationshipData] = Encoder.instance[RelationshipData]{
+    case r: ResourceIdentifier => resourceIdentifier(r)
+    case ResourceIdentifiers(rs) => Json.fromValues(rs.map(resourceIdentifier.apply))
+  }
+
+  implicit val relationshipEncoder: Encoder[Relationship] = Encoder.instance[Relationship] { r =>
+    val _data = r.data.map(d => "data" -> relationshipDataEncoder(d)).toList ++ ignoreEmpty(
       "links" -> r.links.asJson,
       "meta" -> r.meta.asJson
-    ))
+    )
+    Json.fromFields( _data)
   }
 
   implicit val resourceObjectEncoder = Encoder.instance[ResourceObject]{ r =>
@@ -74,13 +80,13 @@ trait CirceEncoding { self: CirceApi =>
     }
 
     val members = Seq(
-      head,
       "included" -> document.included.asJson,
       "links" -> document.links.asJson,
       "meta" -> document.meta.asJson,
       "jsonapi" -> document.version.asJson
     )
-    Json.fromFields(ignoreEmpty( members: _*))
+    val nonEmpty = head +: ignoreEmpty( members: _*)
+    Json.fromFields(nonEmpty)
   }
 
   // Utilities --------------------------------------------

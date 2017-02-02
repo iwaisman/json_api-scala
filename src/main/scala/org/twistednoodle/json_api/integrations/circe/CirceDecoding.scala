@@ -43,7 +43,7 @@ trait CirceDecoding { self: CirceApi =>
   }
 
 
-  implicit val resourceIdentifierDecoder =
+  implicit val resourceIdentifierDecoder: Decoder[ResourceIdentifier] =
     Decoder.instance[ResourceIdentifier]( h =>
                                             for{
                                               id <- h.downField("id").as[String]
@@ -52,14 +52,17 @@ trait CirceDecoding { self: CirceApi =>
                                             } yield SimpleResourceIdentifier( id, tpe, meta)
     )
 
+  implicit val multipleRelationshipDataDecoder: Decoder[ResourceIdentifiers] = Decoder[immutable.Seq[ResourceIdentifier]].emap(s => Right(ResourceIdentifiers(s)))
+  implicit val relationshipDataDecoder: Decoder[RelationshipData] = resourceIdentifierDecoder or multipleRelationshipDataDecoder.asInstanceOf[Decoder[RelationshipData]]
+
   implicit val relationshipDecoder = Decoder.instance[Relationship]{ h =>
     for{
       ls <- h.downField("links").as[Option[Map[String, Link]]]
-      d <- h.downField("data").as[Option[immutable.Seq[ResourceIdentifier]]]
+      d <- h.downField("data").as[Option[RelationshipData]]
       meta <- metaDecoder(h)
     } yield Relationship(
       ls getOrElse Map.empty,
-      d getOrElse Nil,
+      d,
       meta
     )
   }
