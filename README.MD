@@ -1,6 +1,6 @@
 # JSON:API for Scala
 
-Current Version: **0.0.4**
+Current Version: **0.0.7**
 
 This is a small library providing a memory model for [{json:api}](http://jsonapi.org/).
 
@@ -24,7 +24,7 @@ As such, you must add a jitpack resolver:
     "jitpack" at "https://jitpack.io"
 and then the following lib:
 
-    "com.github.iwaisman" % "json_api-scala" % "0.0.4"
+    "com.github.iwaisman" % "json_api-scala" % "0.0.7"
 
 ## Usage
 Currently, the only integration available is for [Circe](https://circe.github.io/circe/). Therefore, the relevant import is:

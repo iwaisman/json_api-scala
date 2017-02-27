@@ -28,7 +28,7 @@ resolvers ++= Seq(
 
 
 libraryDependencies ++= {
-  val circe_version = "0.6+"
+  val circe_version = "0.7+"
   val akka_version = "2.4.16"
   val akka_http_version = "10.0.1"
 
